@@ -11,7 +11,7 @@
 #include <vpad/input.h>
 #include <wups.h>
 
-extern "C" uint32_t VPADGetButtonProcMode(uint32_t);
+// extern "C" uint32_t VPADGetButtonProcMode(uint32_t);
 
 void AlreadyInProgressCallback(NotificationModuleHandle handle, void *context) {
     auto scanTarget = (GX2ScanTarget) (uint32_t) context;

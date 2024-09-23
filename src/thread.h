@@ -7,6 +7,12 @@
 #include <gx2/enum.h>
 #include <memory.h>
 
+#include <curl/curl.h>
+
+#include <fstream>
+#include <iostream>
+#include <string>
+
 struct FSIOThreadData {
     OSThread *thread;
     void *stack;
@@ -15,6 +21,7 @@ struct FSIOThreadData {
     bool setup;
     char threadName[0x50];
 };
+
 
 struct SaveScreenshotMessage {
     NotificationModuleHandle notificationHandle;

@@ -10,8 +10,69 @@
 #include <malloc.h>
 #include <memory/mappedmemory.h>
 
+#include <fstream>
+#include <iostream>
+#include <string>
+
+#include <curl/curl.h>
+
 FSIOThreadData gThreadData;
 bool gThreadsRunning;
+
+void upload_file(const std::string& api_key, const std::string& file_path, NotificationModuleHandle notificationHandle = 0) {
+    CURL *curl;
+    CURLcode res;
+    NotificationModuleStatus err;
+    struct curl_httppost *formpost = NULL;
+    struct curl_httppost *lastptr = NULL;
+    struct curl_slist *headers = NULL;
+
+    std::string errorMessage = "Uploading screenshot to E-Z Host...";
+    NotificationModule_AddDynamicNotification(errorMessage.c_str(), &notificationHandle);
+
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl = curl_easy_init();
+
+    if(curl) {
+        std::string api_key_header = "key: " + api_key;
+        headers = curl_slist_append(headers, api_key_header.c_str());
+
+        curl_formadd(&formpost,
+                     &lastptr,
+                     CURLFORM_COPYNAME, "file",
+                     CURLFORM_FILE, file_path.c_str(),
+                     CURLFORM_CONTENTTYPE, "application/octet-stream",
+                     CURLFORM_FILENAME, file_path.c_str(),
+                     CURLFORM_END);
+
+        curl_easy_setopt(curl, CURLOPT_URL, "https://api.e-z.host/files");
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+
+        res = curl_easy_perform(curl);
+
+        if (res == CURLE_OK) {
+            std::string successMessage = "screenshot uploaded successfully!";
+            NotificationModule_UpdateDynamicNotificationText(notificationHandle, successMessage.c_str());
+            NotificationModule_FinishDynamicNotification(notificationHandle, 2.0f);
+        } else {
+            std::string errorMessage = "Error uploading screenshot: " + std::string(curl_easy_strerror(res));
+            NotificationModule_UpdateDynamicNotificationText(notificationHandle, errorMessage.c_str());
+            NotificationModule_UpdateDynamicNotificationBackgroundColor(notificationHandle, COLOR_RED);
+            NotificationModule_FinishDynamicNotificationWithShake(notificationHandle, 2.0f, 0.5f);
+        }
+
+        curl_easy_cleanup(curl);
+        curl_formfree(formpost);
+        curl_slist_free_all(headers);
+    } else {
+        std::string errorMessage = "Failed to initialize curl";
+        NotificationModule_UpdateDynamicNotificationText(notificationHandle, errorMessage.c_str());
+        NotificationModule_UpdateDynamicNotificationBackgroundColor(notificationHandle, COLOR_RED);
+        NotificationModule_FinishDynamicNotificationWithShake(notificationHandle, 2.0f, 0.5f);
+    }
+    curl_global_cleanup();
+}
 
 static bool getPath(GX2ScanTarget scanTarget, ImageOutputFormatEnum outputFormat, std::string &path, OSCalendarTime &output) {
     std::string buffer = string_format("%s%016llX", WIIU_SCREENSHOT_PATH, OSGetTitleID());
@@ -88,6 +149,7 @@ static int32_t fsIOThreadCallback([[maybe_unused]] int argc, const char **argv) 
                         (err = NotificationModule_FinishDynamicNotification(message->notificationHandle, 2.0)) != NOTIFICATION_MODULE_RESULT_SUCCESS) {
                         DEBUG_FUNCTION_LINE_ERR("Failed to update notification: %s", NotificationModule_GetStatusStr(err));
                     }
+                    upload_file("EZ_KEY", path, 0);
                     success = true;
                 }
             } else {

@@ -34,6 +34,8 @@ CFLAGS	:=	-Wall -O3 -ffunction-sections \
 
 CFLAGS	+=	$(INCLUDE) -D__WIIU__ -D__WUT__ -D__WUPS__ 
 
+CFLAGS	+= 	$(ARCH) $(DEFINES) `curl-config --cflags`	
+
 CXXFLAGS	:= $(CFLAGS) -std=c++20
 
 ASFLAGS	:=	-g $(ARCH)
@@ -50,6 +52,9 @@ CFLAGS += -DDEBUG -DVERBOSE_DEBUG -g
 endif
 
 LIBS	:= -lwups -lwut -lgd -lpng -ljpeg -lz -lnotifications -lmappedmemory
+
+LIBS += -lcurl
+LIBS += `curl-config --libs`
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
