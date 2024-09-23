@@ -3,7 +3,7 @@
 You need to be able to compile this plugin, [follow the steps on how to compile ScreenshotWUPS](https://github.com/wiiu-env/ScreenshotWUPS?tab=readme-ov-file#building).
 Additionally, you need libcurl for the Wii U (``pacman -Syu wiiu-curl``)
 
-Before compiling, you need to make a change, in code#line, you must replace "EZ_KEY" by the key of your E-Z Host account, now yes, compile and [place the plugin to your console](https://github.com/wiiu-env/ScreenshotWUPS?tab=readme-ov-file#installation).
+Before compiling, you need to make a change, in [src/thread.cpp](https://github.com/Slushi-Github/ScreenshotWUPS_EZ/blob/main/src/thread.cpp#L152), you must replace "EZ_KEY" by the key of your E-Z Host account, now yes, compile and [place the plugin to your console](https://github.com/wiiu-env/ScreenshotWUPS?tab=readme-ov-file#installation).
 
 
 # Screenshot Plugin
